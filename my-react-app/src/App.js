@@ -35,17 +35,17 @@ function App() {
   const [title, setTitle] = useState('Adult Depression Percentage Over Years');
   const [yAxisLabel, setYAxisLabel] = useState('Percentage (%)');
 
-  // Digital media consumption data (hardcoded from Statista)
+  // Updated Digital media consumption data with years 2012-2020
   const digitalMediaData = {
-    labels: ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
+    labels: ['2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020'],
     datasets: [
       {
         label: 'Digital Media Consumption',
-        data: [5.2, 5.6, 5.9, 6.3, 6.8, 7.5, 7.9, 8.2, 8.5],
+        data: [4.3, 4.9, 5.3, 5.9, 6.3, 6.5, 6.9, 7.3, 8.1],
         fill: false,
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
         borderColor: 'rgba(54, 162, 235, 1)',
-      },
+      }
     ],
   };
 
@@ -230,7 +230,7 @@ function App() {
             
             {selectedFile === 'digital-media' && (
               <div className="data-source" style={{ fontSize: '0.8rem', marginTop: '10px' }}>
-                Data source: Statista - Daily time spent with digital media by US consumers
+                Data source: eMarketer - Daily time spent with digital media by US consumers (2012-2020)
               </div>
             )}
           </>
