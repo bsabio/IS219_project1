@@ -1,156 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import Papa from 'papaparse';
 import './App.css';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import CombinedLineChart from './components/CombinedLineChart';
+import NormalizedComparisonChart from './components/NormalizedComparisonChart';
 
 function App() {
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: []
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedFile, setSelectedFile] = useState('/adult-depression-lghc-indicator-24.csv');
-  const [title, setTitle] = useState('Adult Depression Percentage Over Years');
-  const [yAxisLabel, setYAxisLabel] = useState('Percentage (%)');
+  const [selectedFile, setSelectedFile] = useState('combined-chart');
+  const [title, setTitle] = useState('Depression Rates vs. Digital Media Usage Over Time');
+  const [loading, setLoading] = useState(false);
 
-  // Updated Digital media consumption data with years 2012-2020
-  const digitalMediaData = {
-    labels: ['2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020'],
-    datasets: [
-      {
-        label: 'Digital Media Consumption',
-        data: [4.3, 4.9, 5.3, 5.9, 6.3, 6.5, 6.9, 7.3, 8.1],
-        fill: false,
-        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-      }
-    ],
-  };
-
-  // Available CSV files
+  // Available chart options - removed individual charts
   const availableFiles = [
-    { 
-      value: '/adult-depression-lghc-indicator-24.csv', 
-      label: 'Adult Depression', 
-      title: 'Adult Depression Percentage Over Years',
-      yLabel: 'Percentage (%)',
-      dataColumn: 'Percent',
-      filterColumn: 'Strata',
-      filterValue: 'Total',
-      labelColumn: 'Year'
+    {
+      value: 'combined-chart',
+      label: 'Combined Line Chart',
+      title: 'Depression Rates vs. Digital Media Usage Over Time',
+      isCustomComponent: true
     },
-    { 
-      value: 'digital-media', 
-      label: 'Digital Media Consumption', 
-      title: 'Daily Time Spent with Digital Media by US Consumers',
-      yLabel: 'Hours per day',
-      isHardcoded: true
+    {
+      value: 'normalized-chart',
+      label: 'Normalized Comparison Chart',
+      title: 'Normalized Comparison: Depression vs. Digital Media Usage',
+      isCustomComponent: true
     }
   ];
-
-  // Function to load CSV data
-  const loadCSVData = (fileConfig) => {
-    setLoading(true);
-    setError(null);
-    setTitle(fileConfig.title);
-    setYAxisLabel(fileConfig.yLabel);
-
-    // If we're using the hardcoded digital media consumption data
-    if (fileConfig.isHardcoded) {
-      setChartData(digitalMediaData);
-      setLoading(false);
-      return;
-    }
-
-    // Sample data to use if CSV loading fails
-    const fallbackData = {
-      labels: ['2018', '2019', '2020', '2021', '2022', '2023'],
-      datasets: [
-        {
-          label: fileConfig.label,
-          data: [12.5, 13.2, 18.6, 20.3, 19.8, 18.5],
-          fill: false,
-          backgroundColor: 'rgba(75,192,192,0.2)',
-          borderColor: 'rgba(75,192,192,1)',
-        },
-      ],
-    };
-
-    // Try to fetch the CSV file
-    fetch(fileConfig.value)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`${fileConfig.label} CSV file not found`);
-        }
-        return response.text();
-      })
-      .then(data => {
-        try {
-          const parsedData = Papa.parse(data, { header: true }).data;
-          
-          // Filter the data if a filter is specified
-          let filteredData = parsedData;
-          if (fileConfig.filterColumn && fileConfig.filterValue) {
-            filteredData = parsedData.filter(row => 
-              row[fileConfig.filterColumn] === fileConfig.filterValue
-            );
-          }
-          
-          // Extract labels and data values
-          const labels = filteredData.map(row => row[fileConfig.labelColumn]);
-          const dataValues = filteredData.map(row => 
-            parseFloat(row[fileConfig.dataColumn]) || 0
-          );
-          
-          setChartData({
-            labels: labels,
-            datasets: [
-              {
-                label: fileConfig.label,
-                data: dataValues,
-                fill: false,
-                backgroundColor: 'rgba(75,192,192,0.2)',
-                borderColor: 'rgba(75,192,192,1)',
-              },
-            ],
-          });
-        } catch (err) {
-          console.error('Error parsing CSV:', err);
-          setChartData(fallbackData);
-          setError(`Error parsing ${fileConfig.label} CSV data. Using sample data instead.`);
-        }
-      })
-      .catch(err => {
-        console.error('Error loading data:', err);
-        setChartData(fallbackData);
-        setError(`Could not load ${fileConfig.label} CSV data. Using sample data instead.`);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
 
   // Handle file selection change
   const handleFileChange = (e) => {
@@ -158,44 +30,34 @@ function App() {
     setSelectedFile(selectedValue);
     const fileConfig = availableFiles.find(file => file.value === selectedValue);
     if (fileConfig) {
-      loadCSVData(fileConfig);
+      setTitle(fileConfig.title);
     }
   };
 
-  // Load initial data
+  // Initialize with the first option
   useEffect(() => {
     const initialFileConfig = availableFiles.find(file => file.value === selectedFile);
     if (initialFileConfig) {
-      loadCSVData(initialFileConfig);
+      setTitle(initialFileConfig.title);
     }
   }, []);
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: title,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: yAxisLabel
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Year'
-        }
-      }
+  // Render the appropriate chart component
+  const renderChart = () => {
+    if (loading) {
+      return <p>Loading chart data...</p>;
     }
+
+    if (selectedFile === 'combined-chart') {
+      return <CombinedLineChart />;
+    }
+
+    if (selectedFile === 'normalized-chart') {
+      return <NormalizedComparisonChart />;
+    }
+
+    // This shouldn't happen with our current options, but just in case
+    return <p>Please select a chart to display</p>;
   };
 
   return (
@@ -204,7 +66,7 @@ function App() {
         <h1>{title}</h1>
         
         <div className="file-selector">
-          <label htmlFor="csv-selector">Select Data: </label>
+          <label htmlFor="csv-selector">Select Chart: </label>
           <select 
             id="csv-selector" 
             value={selectedFile} 
@@ -219,22 +81,7 @@ function App() {
           </select>
         </div>
         
-        {loading ? (
-          <p>Loading chart data...</p>
-        ) : (
-          <>
-            {error && <p className="error-message">{error}</p>}
-            <div style={{ width: '80%', maxWidth: '800px' }}>
-              <Line data={chartData} options={options} />
-            </div>
-            
-            {selectedFile === 'digital-media' && (
-              <div className="data-source" style={{ fontSize: '0.8rem', marginTop: '10px' }}>
-                Data source: eMarketer - Daily time spent with digital media by US consumers (2012-2020)
-              </div>
-            )}
-          </>
-        )}
+        {renderChart()}
       </header>
     </div>
   );
