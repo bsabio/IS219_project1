@@ -6,8 +6,7 @@ import NormalizedComparisonChart from './components/NormalizedComparisonChart';
 function App() {
   const [selectedFile, setSelectedFile] = useState('combined-chart');
   const [title, setTitle] = useState('Depression Rates vs. Digital Media Usage Over Time');
-  const [loading, setLoading] = useState(false);
-
+  
   // Available chart options - removed individual charts
   const availableFiles = [
     {
@@ -40,14 +39,10 @@ function App() {
     if (initialFileConfig) {
       setTitle(initialFileConfig.title);
     }
-  }, []);
+  }, [selectedFile]); // Removed availableFiles from dependencies as it's not changing
 
   // Render the appropriate chart component
   const renderChart = () => {
-    if (loading) {
-      return <p>Loading chart data...</p>;
-    }
-
     if (selectedFile === 'combined-chart') {
       return <CombinedLineChart />;
     }
@@ -62,8 +57,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <main className="App-header">
         <h1>{title}</h1>
+        <h2>Adult Depression Percentage Over Years</h2>
         
         <div className="file-selector">
           <label htmlFor="csv-selector">Select Chart: </label>
@@ -82,7 +78,7 @@ function App() {
         </div>
         
         {renderChart()}
-      </header>
+      </main>
     </div>
   );
 }
